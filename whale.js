@@ -97,7 +97,7 @@ function init() {
     next_piece = makeWhalePiece(makeCircle(40), rcolor, 0, 125, -160, first_piece, 10, 0, 0);
     rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
     piece = makeWhalePiece(makeCircle(60), rcolor, 0, 125, -140, next_piece, 10, 0, 0);
-    for (var i = 1; i < 500; i++) {
+    for (var i = 1; i < 50; i++) {
         rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
         piece = makeWhalePiece(makeCircle(80), rcolor, 0, 125, -140 + (i/5), piece, 5, 0, 0);
     }
