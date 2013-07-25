@@ -21,8 +21,11 @@ function init() {
     container = document.createElement( 'div' );
     document.body.appendChild( container );
 
-    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000 );
-    camera.position.set( 0, 150, 500 );
+//    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000 );
+    halfWidth = window.innerWidth / 2;
+    halfHeight = window.innerHeight / 2;
+    camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfHeight, -halfHeight, 1, 1000);
+    camera.position.set( 0, 0, -1);
 
     scene = new THREE.Scene();
 
@@ -66,13 +69,18 @@ function init() {
 	return circleShape
     }
 
-    // addShape( shape, color, x, y, z, rx, ry,rz, s );
-    addShape( makeCircle(40), 0xff0011, 0, 125, -160, 0, 0, 0, 1 );
-    addShape( makeCircle(60), 0x00ff11, 0, 125, -100, 0, 0, 0, 1 );
-    addShape( makeCircle(80), 0x1100ff, 0, 125, -40, 0, 0, 0, 1 );
-    addShape( makeCircle(60), 0x00ff11, 0, 125, 0, 0, 0, 0, 1 );
+    function addGrayCircles(num_circles) {
+        for(var i = 0; i < num_circles; i++) {
+            var percent = i / num_circles;
+            var grey = new THREE.Color();
+            grey.setRGB(percent, percent, percent);
+            addShape(makeCircle(i+1), grey, i, i, -i, 0, 0, 0, 1);
+        }
+    }
 
-    renderer = new THREE.CanvasRenderer( { antialias: true } );
+    addGrayCircles(100);
+
+    renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.sortObjects = false;
     renderer.sortElements = false;
@@ -89,10 +97,13 @@ function init() {
 
 function onWindowResize() {
 
-    windowHalfX = window.innerWidth / 2;
-    windowHalfY = window.innerHeight / 2;
+    halfWidth = window.innerWidth / 2;
+    halfHeight = window.innerHeight / 2;
+    camera.left = -halfWidth;
+    camera.right = halfWidth;
+    camera.top = halfHeight;
+    camera.bottom = -halfHeight;
 
-    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 
     renderer.setSize( window.innerWidth, window.innerHeight );
