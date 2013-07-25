@@ -188,8 +188,8 @@
 
 
 				// addShape( shape, color, x, y, z, rx, ry,rz, s );
-				addShape( makeCircle(40), 0xff0011, 0, 125, -120, 0, 0, 0, 1 );
-				addShape( makeCircle(60), 0x00ff11, 0, 125, -80, 0, 0, 0, 1 );
+				addShape( makeCircle(40), 0xff0011, 0, 125, -160, 0, 0, 0, 1 );
+				addShape( makeCircle(60), 0x00ff11, 0, 125, -100, 0, 0, 0, 1 );
 				addShape( makeCircle(80), 0x1100ff, 0, 125, -40, 0, 0, 0, 1 );
 				addShape( makeCircle(60), 0x00ff11, 0, 125, 0, 0, 0, 0, 1 );
 				addShape( smileyShape,    0xff0011, -40, 85, 40, 0, 0, 0, 1 );
@@ -253,6 +253,20 @@
 
 			}
 
+			function animateThing( fromx, fromy, tox, toy, thingIndex, duration, easing, delay ) {
+				setTimeout(function() {
+					$({targetX: fromx, targetY: fromy}).animate({targetX: tox, targetY: toy}, {
+						duration: duration,
+						easing: 'easeOutCubic',
+						step: function() {
+							scene.children[0].children[thingIndex].position.x = this.targetX;
+							scene.children[0].children[thingIndex].position.y = this.targetY;
+						}
+					});
+				}, delay);
+
+			}
+
 			function onDocumentMouseUp( event ) {
 
 				document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
@@ -263,56 +277,18 @@
 				currentY = scene.children[0].children[0].position.y
 				mouseX = event.clientX - windowHalfX;
 				mouseY = -(event.clientY - windowHalfY);
-				$({targetX: currentX, targetY: currentY}).animate({targetX: mouseX, targetY: mouseY}, {
-					duration: 700,
-					easing: 'easeOutCubic',
-					step: function() {
-						scene.children[0].children[0].position.x = this.targetX;
-						scene.children[0].children[1].position.x = this.targetX;
-						scene.children[0].children[0].position.y = this.targetY;
-						scene.children[0].children[1].position.y = this.targetY;
-					}
-				});
-				$({targetX: currentX, targetY: currentY}).animate({targetX: mouseX, targetY: mouseY}, {
-					duration: 700,
-					easing: 'easeOutCubic',
-					step: function() {
-						scene.children[0].children[2].position.x = this.targetX;
-						scene.children[0].children[3].position.x = this.targetX;
-						scene.children[0].children[2].position.y = this.targetY;
-						scene.children[0].children[3].position.y = this.targetY;
-					}
-				});
-				$({targetX: currentX, targetY: currentY}).animate({targetX: mouseX, targetY: mouseY}, {
-					duration: 600,
-					easing: 'easeOutCubic',
-					step: function() {
-						scene.children[0].children[4].position.x = this.targetX;
-						scene.children[0].children[5].position.x = this.targetX;
-						scene.children[0].children[4].position.y = this.targetY;
-						scene.children[0].children[5].position.y = this.targetY;
-					}
-				});
-				$({targetX: currentX, targetY: currentY}).animate({targetX: mouseX, targetY: mouseY}, {
-					duration: 500,
-					easing: 'easeOutCubic',
-					step: function() {
-						scene.children[0].children[6].position.x = this.targetX;
-						scene.children[0].children[7].position.x = this.targetX;
-						scene.children[0].children[6].position.y = this.targetY;
-						scene.children[0].children[7].position.y = this.targetY;
-					}
-				});
-				$({targetX: currentX, targetY: currentY}).animate({targetX: mouseX, targetY: mouseY}, {
-					duration: 400,
-					easing: 'easeOutCubic',
-					step: function() {
-						scene.children[0].children[8].position.x = this.targetX - 40;
-						scene.children[0].children[9].position.x = this.targetX - 40;
-						scene.children[0].children[8].position.y = this.targetY - 40;
-						scene.children[0].children[9].position.y = this.targetY - 40;
-					}
-				});
+				// function animateThing( fromx, fromy, tox, toy, thingIndex, duration, easing, delay ) {
+				animateThing(currentX, currentY, mouseX, mouseY, 0, 700, 'easeOutCubic', 400);
+				animateThing(currentX, currentY, mouseX, mouseY, 1, 700, 'easeOutCubic', 400);
+				animateThing(currentX, currentY, mouseX, mouseY, 2, 700, 'easeOutCubic', 300);
+				animateThing(currentX, currentY, mouseX, mouseY, 3, 700, 'easeOutCubic', 300);
+				animateThing(currentX, currentY, mouseX, mouseY, 4, 700, 'easeOutCubic', 200);
+				animateThing(currentX, currentY, mouseX, mouseY, 5, 700, 'easeOutCubic', 200);
+				animateThing(currentX, currentY, mouseX, mouseY, 6, 700, 'easeOutCubic', 100);
+				animateThing(currentX, currentY, mouseX, mouseY, 7, 700, 'easeOutCubic', 100);
+				animateThing(currentX, currentY - 40, mouseX - 40, mouseY - 40, 8, 700, 'easeOutCubic', 0);
+				animateThing(currentX, currentY - 40, mouseX - 40, mouseY - 40, 9, 700, 'easeOutCubic', 0);
+
 
 			}
 
