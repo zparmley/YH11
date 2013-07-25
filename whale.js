@@ -13,6 +13,14 @@ var mouseXOnMouseDown = 0;
 var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
 
+
+// Some global stuff - ouch - refactor
+var first_piece
+var next_piece
+var last_piece
+
+
+
 init();
 animate();
 
@@ -35,52 +43,68 @@ function init() {
 
     function addShape( shape, color, x, y, z, rx, ry, rz, s ) {
 
-	// flat shape
+    	// flat shape
 
-	var geometry = new THREE.ShapeGeometry( shape );
-	var material = new THREE.MeshBasicMaterial( { color: color, overdraw: true } );
+    	var geometry = new THREE.ShapeGeometry( shape );
+    	var material = new THREE.MeshBasicMaterial( { color: color, overdraw: true } );
 
-	var mesh = new THREE.Mesh( geometry, material );
-	mesh.position.set( x, y, z );
-	mesh.rotation.set( rx, ry, rz );
-	mesh.scale.set( s, s, s );
-	parent.add( mesh );
+    	var mesh = new THREE.Mesh( geometry, material );
+    	mesh.position.set( x, y, z );
+    	mesh.rotation.set( rx, ry, rz );
+    	mesh.scale.set( s, s, s );
+    	parent.add( mesh );
 
-	// line
+    	// line
 
-	var geometry = shape.createPointsGeometry();
-	var material = new THREE.LineBasicMaterial( { linewidth: 2, color: 0x333333, transparent: true } );
+    	// var geometry = shape.createPointsGeometry();
+    	// var material = new THREE.LineBasicMaterial( { linewidth: 2, color: 0x333333, transparent: true } );
 
-	var line = new THREE.Line( geometry, material );
-	line.position.set( x, y, z );
-	line.rotation.set( rx, ry, rz );
-	line.scale.set( s, s, s );
-	parent.add( line );
+    	// var line = new THREE.Line( geometry, material );
+    	// line.position.set( x, y, z );
+    	// line.rotation.set( rx, ry, rz );
+    	// line.scale.set( s, s, s );
+    	// parent.add( line );
 
+    }
+
+    function makeWhalePiece(shape, color, x, y, z, next_shape, next_animate_delay, xoffset, yoffset) {
+        addShape(shape, color, x, y, z, 0, 0, 0, 1);
+        return {
+            shape: shape,
+            position_in_scene: scene.children[0].children.length - 1,
+            next_shape: next_shape,
+            next_animate_delay: next_animate_delay,
+            xoffset: xoffset | 0,
+            yoffset: yoffset | 0
+        };
     }
 
     function makeCircle( radius ) {
-	var circleShape = new THREE.Shape();
-	circleShape.moveTo( 0, radius );
-	circleShape.quadraticCurveTo( radius, radius, radius, 0 );
-	circleShape.quadraticCurveTo( radius, -radius, 0, -radius );
-	circleShape.quadraticCurveTo( -radius, -radius, -radius, 0 );
-	circleShape.quadraticCurveTo( -radius, radius, 0, radius );
-	return circleShape
+    	var circleShape = new THREE.Shape();
+    	circleShape.moveTo( 0, radius );
+    	circleShape.quadraticCurveTo( radius, radius, radius, 0 );
+    	circleShape.quadraticCurveTo( radius, -radius, 0, -radius );
+    	circleShape.quadraticCurveTo( -radius, -radius, -radius, 0 );
+    	circleShape.quadraticCurveTo( -radius, radius, 0, radius );
+    	return circleShape
     }
 
-    function addGrayCircles(num_circles) {
-        for(var i = 0; i < num_circles; i++) {
-            var percent = i / num_circles;
-            var grey = new THREE.Color();
-            grey.setRGB(percent, percent, percent);
-            addShape(makeCircle(i+1), grey, i, i, -i, 0, 0, 0, 1);
-        }
+    // addShape( shape, color, x, y, z, rx, ry,rz, s );
+    // function makeWhalePiece(shape, color, x, y, z, next_shape, next_animate_delay, xoffset, yoffset) {
+    rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
+    first_piece = makeWhalePiece(makeCircle(30), rcolor, 0, 125, -180, null, null, 0, 0);
+    rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
+    next_piece = makeWhalePiece(makeCircle(40), rcolor, 0, 125, -160, first_piece, 10, 0, 0);
+    rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
+    piece = makeWhalePiece(makeCircle(60), rcolor, 0, 125, -140, next_piece, 10, 0, 0);
+    for (var i = 1; i < 500; i++) {
+        rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
+        piece = makeWhalePiece(makeCircle(80), rcolor, 0, 125, -140 + (i/5), piece, 5, 0, 0);
     }
-
-    addGrayCircles(100);
+    last_piece = piece;
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
+    // renderer = new THREE.CanvasRenderer( { antialias: true } );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.sortObjects = false;
     renderer.sortElements = false;
@@ -136,17 +160,42 @@ function onDocumentMouseMove( event ) {
 }
 
 
+
+
 function animateThing( fromx, fromy, tox, toy, thingIndex, duration, easing, delay ) {
     setTimeout(function() {
-	$({targetX: fromx, targetY: fromy}).animate({targetX: tox, targetY: toy}, {
-	    duration: duration,
-	    easing: 'easeOutCubic',
-	    step: function() {
-		scene.children[0].children[thingIndex].position.x = this.targetX;
-		scene.children[0].children[thingIndex].position.y = this.targetY;
-	    }
-	});
+    $({targetX: fromx, targetY: fromy}).animate({targetX: tox, targetY: toy}, {
+        duration: duration,
+        easing: 'easeOutCubic',
+        step: function() {
+            scene.children[0].children[thingIndex].position.x = this.targetX;
+            scene.children[0].children[thingIndex].position.y = this.targetY;
+        }
+    });
     }, delay);
+}
+
+function animateThingNoDelay( fromx, fromy, tox, toy, thingIndex, duration, easing) {
+    $({targetX: fromx, targetY: fromy}).animate({targetX: tox, targetY: toy}, {
+        duration: duration,
+        easing: 'easeOutCubic',
+        step: function() {
+            scene.children[0].children[thingIndex].position.x = this.targetX;
+            scene.children[0].children[thingIndex].position.y = this.targetY;
+        }
+    });
+}
+
+
+function animateWhalePiece(piece, tox, toy) {
+    fromx = scene.children[0].children[piece.position_in_scene].position.x;
+    fromy = scene.children[0].children[piece.position_in_scene].position.y;
+    animateThingNoDelay(fromx, fromy, tox + piece.xoffset, toy + piece.yoffset, piece.position_in_scene, 700, 'swing');
+    if (piece.next_shape != null) {
+        setTimeout(function() {
+            animateWhalePiece(piece.next_shape, tox, toy);
+        }, piece.next_animate_delay);
+    }
 
 }
 
@@ -160,17 +209,18 @@ function onDocumentMouseUp( event ) {
     currentY = scene.children[0].children[0].position.y
     mouseX = event.clientX - windowHalfX;
     mouseY = -(event.clientY - windowHalfY);
+    animateWhalePiece(last_piece, mouseX, mouseY);
     // function animateThing( fromx, fromy, tox, toy, thingIndex, duration, easing, delay ) {
-    animateThing(currentX, currentY, mouseX, mouseY, 0, 700, 'easeOutCubic', 400);
-    animateThing(currentX, currentY, mouseX, mouseY, 1, 700, 'easeOutCubic', 400);
-    animateThing(currentX, currentY, mouseX, mouseY, 2, 700, 'easeOutCubic', 300);
-    animateThing(currentX, currentY, mouseX, mouseY, 3, 700, 'easeOutCubic', 300);
-    animateThing(currentX, currentY, mouseX, mouseY, 4, 700, 'easeOutCubic', 200);
-    animateThing(currentX, currentY, mouseX, mouseY, 5, 700, 'easeOutCubic', 200);
-    animateThing(currentX, currentY, mouseX, mouseY, 6, 700, 'easeOutCubic', 100);
-    animateThing(currentX, currentY, mouseX, mouseY, 7, 700, 'easeOutCubic', 100);
-    animateThing(currentX, currentY - 40, mouseX - 40, mouseY - 40, 8, 700, 'easeOutCubic', 0);
-    animateThing(currentX, currentY - 40, mouseX - 40, mouseY - 40, 9, 700, 'easeOutCubic', 0);
+    // animateThing(currentX, currentY, mouseX, mouseY, 0, 700, 'easeOutCubic', 400);
+    // animateThing(currentX, currentY, mouseX, mouseY, 1, 700, 'easeOutCubic', 400);
+    // animateThing(currentX, currentY, mouseX, mouseY, 2, 700, 'easeOutCubic', 300);
+    // animateThing(currentX, currentY, mouseX, mouseY, 3, 700, 'easeOutCubic', 300);
+    // animateThing(currentX, currentY, mouseX, mouseY, 4, 700, 'easeOutCubic', 200);
+    // animateThing(currentX, currentY, mouseX, mouseY, 5, 700, 'easeOutCubic', 200);
+    // animateThing(currentX, currentY, mouseX, mouseY, 6, 700, 'easeOutCubic', 100);
+    // animateThing(currentX, currentY, mouseX, mouseY, 7, 700, 'easeOutCubic', 100);
+    // animateThing(currentX, currentY - 40, mouseX - 40, mouseY - 40, 8, 700, 'easeOutCubic', 0);
+    // animateThing(currentX, currentY - 40, mouseX - 40, mouseY - 40, 9, 700, 'easeOutCubic', 0);
 }
 
 
