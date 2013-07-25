@@ -192,7 +192,9 @@
 				addShape( makeCircle(60), 0x00ff11, 0, 125, -80, 0, 0, 0, 1 );
 				addShape( makeCircle(80), 0x1100ff, 0, 125, -40, 0, 0, 0, 1 );
 				addShape( makeCircle(60), 0x00ff11, 0, 125, 0, 0, 0, 0, 1 );
-				addShape( makeCircle(40), 0xff0011, 0, 125, 40, 0, 0, 0, 1 );
+				addShape( smileyShape,    0xff0011, -40, 85, 40, 0, 0, 0, 1 );
+				// addShape( makeCircle(40), 0xff0011, 0, 125, 40, 0, 0, 0, 1 );
+
 
 
 				//
@@ -305,20 +307,12 @@
 					duration: 400,
 					easing: 'easeOutCubic',
 					step: function() {
-						scene.children[0].children[8].position.x = this.targetX;
-						scene.children[0].children[9].position.x = this.targetX;
-						scene.children[0].children[8].position.y = this.targetY;
-						scene.children[0].children[9].position.y = this.targetY;
+						scene.children[0].children[8].position.x = this.targetX - 40;
+						scene.children[0].children[9].position.x = this.targetX - 40;
+						scene.children[0].children[8].position.y = this.targetY - 40;
+						scene.children[0].children[9].position.y = this.targetY - 40;
 					}
 				});
-
-
-
-				// scene.children[0].children[0].position.x = mouseX
-				// scene.children[0].children[0].position.y = mouseY
-				// scene.children[1].children[1].position.x = mouseX
-				// scene.children[1].children[1].position.y = mouseY
-
 
 			}
 
