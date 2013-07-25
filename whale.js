@@ -32,7 +32,7 @@ function init() {
 //    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000 );
     halfWidth = window.innerWidth / 2;
     halfHeight = window.innerHeight / 2;
-    camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfHeight, -halfHeight, 1, 1000);
+    camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfHeight, -halfHeight, 1, 5000);
     camera.position.set( 0, 0, -1);
 
     scene = new THREE.Scene();
@@ -91,15 +91,16 @@ function init() {
 
     // addShape( shape, color, x, y, z, rx, ry,rz, s );
     // function makeWhalePiece(shape, color, x, y, z, next_shape, next_animate_delay, xoffset, yoffset) {
+    var start_z = -4000;
     rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
-    first_piece = makeWhalePiece(makeCircle(30), rcolor, 0, 125, -180, null, null, 0, 0);
+    first_piece = makeWhalePiece(makeCircle(30), rcolor, 0, 125, start_z, null, null, 0, 0);
     rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
-    next_piece = makeWhalePiece(makeCircle(40), rcolor, 0, 125, -160, first_piece, 10, 0, 0);
+    next_piece = makeWhalePiece(makeCircle(40), rcolor, 0, 125, start_z+10, first_piece, 50, 0, 0);
     rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
-    piece = makeWhalePiece(makeCircle(60), rcolor, 0, 125, -140, next_piece, 10, 0, 0);
-    for (var i = 1; i < 50; i++) {
+    piece = makeWhalePiece(makeCircle(60), rcolor, 0, 125, start_z+20, next_piece, 50, 0, 0);
+    for (var i = 1; i < 500; i++) {
         rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
-        piece = makeWhalePiece(makeCircle(80), rcolor, 0, 125, -140 + (i/5), piece, 5, 0, 0);
+        piece = makeWhalePiece(makeCircle(80), rcolor, 0, 125, start_z+30 + (i), piece, 50, 0, 0);
     }
     last_piece = piece;
 
@@ -110,7 +111,13 @@ function init() {
     renderer.sortElements = false;
     container.appendChild( renderer.domElement );
 
-    document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+    stats = new Stats();
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.top = '0px';
+    container.appendChild( stats.domElement );
+
+    document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+    // document.addEventListener( 'mousedown', onDocumentMouseDown, false );
     document.addEventListener( 'touchstart', onDocumentTouchStart, false );
     document.addEventListener( 'touchmove', onDocumentTouchMove, false );
 
@@ -151,11 +158,12 @@ function onDocumentMouseDown( event ) {
 
 
 function onDocumentMouseMove( event ) {
+    goToMouse(event);
 
-    mouseX = event.clientX - windowHalfX;
-    mouseY = event.clientY - windowHalfY;
+    // mouseX = event.clientX - windowHalfX;
+    // mouseY = event.clientY - windowHalfY;
 
-    targetRotation = targetRotationOnMouseDown + ( mouseX - mouseXOnMouseDown ) * 0.02;
+    // targetRotation = targetRotationOnMouseDown + ( mouseX - mouseXOnMouseDown ) * 0.02;
 
 }
 
@@ -199,28 +207,26 @@ function animateWhalePiece(piece, tox, toy) {
 
 }
 
+var gtmcallcount = 0;
+function goToMouseInner( event ) {
+    gtmcallcount++;
+    console.log(gtmcallcount);
+
+    mouseX = event.clientX - windowHalfX;
+    mouseY = -(event.clientY - windowHalfY);
+    animateWhalePiece(last_piece, mouseX, mouseY);
+}
+
+goToMouse = _.throttle(goToMouseInner, 125);
 
 function onDocumentMouseUp( event ) {
     document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
     document.removeEventListener( 'mouseup', onDocumentMouseUp, false );
     document.removeEventListener( 'mouseout', onDocumentMouseOut, false );
 
-    currentX = scene.children[0].children[0].position.x
-    currentY = scene.children[0].children[0].position.y
     mouseX = event.clientX - windowHalfX;
     mouseY = -(event.clientY - windowHalfY);
     animateWhalePiece(last_piece, mouseX, mouseY);
-    // function animateThing( fromx, fromy, tox, toy, thingIndex, duration, easing, delay ) {
-    // animateThing(currentX, currentY, mouseX, mouseY, 0, 700, 'easeOutCubic', 400);
-    // animateThing(currentX, currentY, mouseX, mouseY, 1, 700, 'easeOutCubic', 400);
-    // animateThing(currentX, currentY, mouseX, mouseY, 2, 700, 'easeOutCubic', 300);
-    // animateThing(currentX, currentY, mouseX, mouseY, 3, 700, 'easeOutCubic', 300);
-    // animateThing(currentX, currentY, mouseX, mouseY, 4, 700, 'easeOutCubic', 200);
-    // animateThing(currentX, currentY, mouseX, mouseY, 5, 700, 'easeOutCubic', 200);
-    // animateThing(currentX, currentY, mouseX, mouseY, 6, 700, 'easeOutCubic', 100);
-    // animateThing(currentX, currentY, mouseX, mouseY, 7, 700, 'easeOutCubic', 100);
-    // animateThing(currentX, currentY - 40, mouseX - 40, mouseY - 40, 8, 700, 'easeOutCubic', 0);
-    // animateThing(currentX, currentY - 40, mouseX - 40, mouseY - 40, 9, 700, 'easeOutCubic', 0);
 }
 
 
@@ -266,6 +272,8 @@ function animate() {
     requestAnimationFrame( animate );
 
     render();
+    stats.update();
+
 
 }
 
