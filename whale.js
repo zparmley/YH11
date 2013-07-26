@@ -25,6 +25,15 @@ var default_y = 125;
 var start_z = -4000;
 var default_z_move = 10;
 
+// Sizes, length
+var body_max_radius = 180;
+var front_min_radius = 40;
+var front_num_pieces = 14;
+var body_num_pieces = 7;
+var tail_min_radius = 20;
+var tail_max_y_offset = -300;
+var tail_num_pieces = 18;
+
 
 init();
 animate();
@@ -155,18 +164,18 @@ function init() {
         var whale_pieces_stack = [];
 
         // Backside/tail slope
-        var backside_radius = range_slope(40, 210, 22);
-        var backside_y_push = range_slope(-300, 0, 22);
+        var backside_radius = range_slope(tail_min_radius, body_max_radius, tail_num_pieces);
+        var backside_y_push = range_slope(tail_max_y_offset, 0, tail_num_pieces);
         _.zip(backside_radius, backside_y_push).map(function(radius_yoffset) {
             whale_pieces_stack.push(['offset', radius_yoffset[0], altColor(), get_z(), 0, radius_yoffset[1]]);
         });
 
         // Mid length
-        for (var i = 0; i < 7; i++) {
-            whale_pieces_stack.push(['basic', 220, altColor(), get_z()]);
+        for (var i = 0; i < body_num_pieces; i++) {
+            whale_pieces_stack.push(['basic', body_max_radius, altColor(), get_z()]);
         }
         // From max diameter to front
-        var frontside_radius = range_slope(40, 210, 14).reverse();
+        var frontside_radius = range_slope(front_min_radius, body_max_radius, front_num_pieces).reverse();
         frontside_radius.map(function(radius) {
             whale_pieces_stack.push(['basic', radius, altColor(), get_z()]);
         });
