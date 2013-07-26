@@ -1,3 +1,5 @@
+var FOG_ENABLED = false;
+
 var container, stats;
 
 var camera, scene, renderer;
@@ -22,7 +24,7 @@ var last_piece;
 var default_next_animate_delay = 20;
 var default_x = 0;
 var default_y = 125;
-var start_z = -4000;
+var start_z = -1000;
 var default_z_move = 10;
 
 // Sizes, length
@@ -34,6 +36,9 @@ var tail_min_radius = 20;
 var tail_max_y_offset = -300;
 var tail_num_pieces = 18;
 
+var WATER_COLOR = 0xaaccff;
+
+var WHALE_MATERIAL = new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture('textures/whale_colors_1.png')});
 
 init();
 animate();
@@ -64,18 +69,22 @@ function init() {
 
     halfWidth = window.innerWidth / 2;
     halfHeight = window.innerHeight / 2;
-    camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfHeight, -halfHeight, 1, 5000);
+    //camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfHeight, -halfHeight, 1, 5000);
+    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1100 );
     camera.position.set( 0, 0, -1);
 
     scene = new THREE.Scene();
+
+    if (FOG_ENABLED) {
+        fog = new THREE.Fog(WATER_COLOR, 600, 1000);
+        scene.fog = fog;
+    }
 
     parent = new THREE.Object3D();
     scene.add( parent );
 
     function addShape( circleGeom, color, x, y, z, rx, ry, rz, s ) {
-        var texture = THREE.ImageUtils.loadTexture('textures/whale_colors_1.png');
-    	var material = new THREE.MeshBasicMaterial( { map: texture} );
-    	var mesh = new THREE.Mesh( circleGeom, material );
+       	var mesh = new THREE.Mesh( circleGeom, WHALE_MATERIAL );
     	mesh.position.set( x, y, z );
     	mesh.rotation.set( rx, ry, rz );
     	mesh.scale.set( s, s, s );
@@ -102,7 +111,7 @@ function init() {
     }
 
     function makeCircle( radius ) {
-        return new THREE.CircleGeometry(radius, 64);
+        return new THREE.CircleGeometry(radius, 32);
     }
 
     // addShape( shape, color, x, y, z, rx, ry,rz, s );
@@ -209,18 +218,9 @@ function init() {
 
 
 function onWindowResize() {
-
-    halfWidth = window.innerWidth / 2;
-    halfHeight = window.innerHeight / 2;
-    camera.left = -halfWidth;
-    camera.right = halfWidth;
-    camera.top = halfHeight;
-    camera.bottom = -halfHeight;
-
+    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-
     renderer.setSize( window.innerWidth, window.innerHeight );
-
 }
 
 
@@ -348,19 +348,12 @@ function onDocumentTouchMove( event ) {
 
 
 function animate() {
-
     requestAnimationFrame( animate );
-
     render();
     stats.update();
-
-
 }
 
 
 function render() {
-
-    scene.children[0].children[6].rotation.y += 0.01;
     renderer.render( scene, camera );
-
 }
