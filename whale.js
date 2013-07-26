@@ -1,4 +1,4 @@
-var FOG_ENABLED = false;
+var FOG_ENABLED = true;
 
 var container, stats;
 
@@ -74,9 +74,8 @@ function init() {
 
     halfWidth = window.innerWidth / 2;
     halfHeight = window.innerHeight / 2;
-    //camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfHeight, -halfHeight, 1, 5000);
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1100 );
-    camera.position.set( 0, 0, -1);
+    camera = new THREE.PerspectiveCamera( 45, $(document).width() / $(document).height(), 1, 1100 );
+    camera.position.set( 0, 0, 1);
 
     scene = new THREE.Scene();
 
@@ -143,7 +142,6 @@ function init() {
         } else {
             current_color = 0x000000;
         }
-        console.log(current_color);
         return current_color;
     }
 
@@ -195,14 +193,24 @@ function init() {
         });
 
         process_pieces_stack(whale_pieces_stack);
-   }
+    }
 
     add_whale();
 
+    function make_bubble() {
+        var material = new THREE.MeshLambertMaterial({color: 0xff0000, transparent: true});
+        var geom = new THREE.SphereGeometry(70, 32, 16);
+        return new THREE.Mesh(geom, material);
+    }
+
+    for ( var i = 0; i < 10; i++ ) {
+        var bubble = make_bubble();
+        initBubble(bubble, i * 10 );
+        parent.add(bubble);
+    }
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
-    // renderer = new THREE.CanvasRenderer( { antialias: true } );
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize($(document).width(), $(document).height());
     renderer.sortObjects = false;
     renderer.sortElements = false;
     container.appendChild( renderer.domElement );
@@ -222,10 +230,34 @@ function init() {
 }
 
 
+function initBubble(bubble, delay) {
+
+    var bubble = this instanceof THREE.Mesh ? this : bubble;
+    var delay = delay !== undefined ? delay : 0;
+
+    bubble.position.x = 10;
+    bubble.position.y = 10;
+    bubble.position.z = 10;
+
+    new TWEEN.Tween( bubble )
+        .delay( delay )
+        .to( {}, 10000 )
+        .onComplete( initBubble )
+        .start();
+
+    new TWEEN.Tween( bubble.position )
+        .delay( delay )
+        .to( { x: 100, y: 200, z: -1000}, 1000 )
+        .start();
+}
+
+
 function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    var width = $(document).width();
+    var height = $(document).height();
+    camera.aspect = width / height;
     camera.updateProjectionMatrix();
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize(width, height);
 }
 
 
@@ -278,11 +310,8 @@ function animateWhalePiece(piece, tox, toy) {
 
 }
 
-var gtmcallcount = 0;
-function goToMouseInner( event ) {
-    gtmcallcount++;
-    console.log(gtmcallcount);
 
+function goToMouseInner( event ) {
     mouseX = event.clientX - windowHalfX;
     mouseY = -(event.clientY - windowHalfY);
     animateWhalePiece(last_piece, mouseX, mouseY);
@@ -346,5 +375,6 @@ function animate() {
 
 
 function render() {
+    TWEEN.update();
     renderer.render( scene, camera );
 }
