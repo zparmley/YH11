@@ -42,6 +42,12 @@ var eye_stack_position = 3;
 var eye_radius = 10;
 var eye_x_offset = 50;
 var eye_y_offset = 50;
+var WHALE_MATERIAL = new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture('textures/whale_colors_1.png')});
+var WHALE_SONGS = [new Audio("resources/orca1.wav"),
+                   new Audio("resources/orca2.wav"),
+                   new Audio("resources/orca3.wav"),
+                   new Audio("resources/orca4.wav"),
+                   new Audio("resources/orca5.wav")];
 
 init();
 animate();
@@ -225,7 +231,7 @@ function init() {
     container.appendChild( stats.domElement );
 
     document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-    // document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+    document.addEventListener( 'mousedown', onDocumentMouseDown, false );
     document.addEventListener( 'touchstart', onDocumentTouchStart, false );
     document.addEventListener( 'touchmove', onDocumentTouchMove, false );
 
@@ -242,28 +248,13 @@ function onWindowResize() {
 
 
 function onDocumentMouseDown( event ) {
-
     event.preventDefault();
-
-    // document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-    document.addEventListener( 'mouseup', onDocumentMouseUp, false );
-    // document.addEventListener( 'mouseout', onDocumentMouseOut, false );
-
-    mouseXOnMouseDown = event.clientX - windowHalfX;
-    mouseYOnMouseDown = event.clientY - windowHalfY;
-    targetRotationOnMouseDown = targetRotation;
-
+    WHALE_SONGS[_.random(WHALE_SONGS.length-1)].play();
 }
 
 
 function onDocumentMouseMove( event ) {
     goToMouse(event);
-
-    // mouseX = event.clientX - windowHalfX;
-    // mouseY = event.clientY - windowHalfY;
-
-    // targetRotation = targetRotationOnMouseDown + ( mouseX - mouseXOnMouseDown ) * 0.02;
-
 }
 
 
@@ -279,6 +270,7 @@ function animateThing( fromx, fromy, tox, toy, thingIndex, duration, easing, del
     });
     }, delay);
 }
+
 
 function animateThingNoDelay( fromx, fromy, tox, toy, thingIndex, duration, easing) {
     $({targetX: fromx, targetY: fromy}).animate({targetX: tox, targetY: toy}, {
