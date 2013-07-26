@@ -18,9 +18,35 @@ var first_piece;
 var next_piece;
 var last_piece;
 
+// Whale config
+var default_next_animate_delay = 20;
+var default_x = 0;
+var default_y = 125;
+var start_z = -4000;
+var default_z_move = 10;
+
 
 init();
 animate();
+
+function range_slope(start, end, num) {
+    init_range = _.range(0, end-start);
+    ret_range = [];
+    mod_point = Math.ceil((end-start)/num);
+    for (var i = 0; i<init_range.length; i++) {
+        if (init_range[i] % mod_point == 0) {
+            ret_range.push(init_range[i] + start);
+        }
+    }
+
+    while (ret_range.length < num) {
+        ret_range.push(end);
+    }
+
+    return ret_range;
+}
+
+
 
 function init() {
 
@@ -59,22 +85,97 @@ function init() {
         };
     }
 
+    function makeOffsetWhaleCircle(radius, color, z, x_offset, y_offset, next_shape) {
+        return makeWhalePiece(makeCircle(radius), color, default_x + x_offset, default_y + y_offset, z, next_shape, default_next_animate_delay, x_offset, y_offset);
+    }
+    function makeBasicWhaleCircle(radius, color, z, next_shape) {
+        return makeWhalePiece(makeCircle(radius), color, default_x, default_y, z, next_shape, default_next_animate_delay, 0, 0);
+    }
+
     function makeCircle( radius ) {
         return new THREE.CircleGeometry(radius, 64);
     }
 
-    var start_z = -4000;
-    rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
-    first_piece = makeWhalePiece(makeCircle(30), rcolor, 0, 125, start_z, null, null, 0, 0);
-    rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
-    next_piece = makeWhalePiece(makeCircle(40), rcolor, 0, 125, start_z+10, first_piece, 50, 0, 0);
-    rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
-    piece = makeWhalePiece(makeCircle(60), rcolor, 0, 125, start_z+20, next_piece, 50, 0, 0);
-    for (var i = 1; i < 5; i++) {
+    // addShape( shape, color, x, y, z, rx, ry,rz, s );
+    // function makeWhalePiece(shape, color, x, y, z, next_shape, next_animate_delay, xoffset, yoffset)
+    function add_many_pieces() {
+        var start_z = -4000;
         rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
-        piece = makeWhalePiece(makeCircle(100), rcolor, 0, 125, start_z+30 + (i), piece, 50, 0, 0);
+        first_piece = makeWhalePiece(makeCircle(30), rcolor, 0, 125, start_z, null, null, 0, 0);
+        rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
+        next_piece = makeWhalePiece(makeCircle(40), rcolor, 0, 125, start_z+10, first_piece, 50, 0, 0);
+        rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
+        piece = makeWhalePiece(makeCircle(60), rcolor, 0, 125, start_z+20, next_piece, 50, 0, 0);
+        for (var i = 1; i < 50; i++) {
+            rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
+            piece = makeWhalePiece(makeCircle(80), rcolor, 0, 125, start_z+30 + (i*10), piece, 50, 0, 0);
+        }
+        last_piece = piece;
     }
-    last_piece = piece;
+
+    var current_color = 0xffffff;
+    function altColor() {
+        if (current_color == 0x000000) {
+            current_color = 0xffffff;
+        } else {
+            current_color = 0x000000;
+        }
+        console.log(current_color);
+        return current_color;
+    }
+
+    var current_z = start_z;
+    function get_z(z_move) {
+        ret = current_z;
+        z_move = z_move | default_z_move;
+        current_z = current_z + default_z_move;
+        return ret;
+    }
+
+        //     function makeOffsetWhaleCircle(radius, color, z, x_offset, y_offset, next_shape)
+    function process_pieces_stack_piece(piece_def, next) {
+        if (piece_def[0] == 'basic') {
+            piece = makeBasicWhaleCircle(piece_def[1], piece_def[2], piece_def[3], next);
+        } else if (piece_def[0] == 'offset') {
+            piece = makeOffsetWhaleCircle(piece_def[1], piece_def[2], piece_def[3], piece_def[4], piece_def[5], next);
+        }
+
+        return piece;
+    }
+
+    function process_pieces_stack(stack) {
+        piece = null;
+        for (var i=0; i<stack.length; i++) {
+            piece = process_pieces_stack_piece(stack[i], piece);
+        }
+        last_piece = piece;
+    }
+
+    function add_whale() {
+        var whale_pieces_stack = [];
+
+        // Backside/tail slope
+        var backside_radius = range_slope(40, 210, 22);
+        var backside_y_push = range_slope(-300, 0, 22);
+        _.zip(backside_radius, backside_y_push).map(function(radius_yoffset) {
+            whale_pieces_stack.push(['offset', radius_yoffset[0], altColor(), get_z(), 0, radius_yoffset[1]]);
+        });
+
+        // Mid length
+        for (var i = 0; i < 7; i++) {
+            whale_pieces_stack.push(['basic', 220, altColor(), get_z()]);
+        }
+        // From max diameter to front
+        var frontside_radius = range_slope(40, 210, 14).reverse();
+        frontside_radius.map(function(radius) {
+            whale_pieces_stack.push(['basic', radius, altColor(), get_z()]);
+        });
+
+        process_pieces_stack(whale_pieces_stack);
+   }
+
+    add_whale();
+
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     // renderer = new THREE.CanvasRenderer( { antialias: true } );
