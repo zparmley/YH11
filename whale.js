@@ -12,9 +12,6 @@ var targetRotationOnMouseDown = 0;
 var mouseX = 0;
 var mouseXOnMouseDown = 0;
 
-var windowHalfX = window.innerWidth / 2;
-var windowHalfY = window.innerHeight / 2;
-
 // Some global stuff - ouch - refactor
 var first_piece;
 var next_piece;
@@ -32,6 +29,7 @@ var default_z_move = 10;
 
 var WATER_COLOR = 0xaaccff;
 var WHALE_MATERIAL = new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture('textures/whale_colors_1.png')});
+var BUBBLE_MATERIAL = new THREE.MeshLambertMaterial({color: 0xffffff, opacity: .1, transparent: true});
 var WHALE_SONGS = [new Audio("resources/orca1.wav"),
                    new Audio("resources/orca2.wav"),
                    new Audio("resources/orca3.wav"),
@@ -66,11 +64,24 @@ var left_fin_x_correction = 30;
 var fin_default_z_offset = 5;
 var fin_default_rotation = .7;
 
+var WINDOW_WIDTH;
+var WINDOW_HEIGHT;
+var HALF_WINDOW_WIDTH;
+var HALF_WINDOW_HEIGHT;
+
 // Ditch this
 var debugobj;
 
 init();
 animate();
+
+function update_window_dimensions() {
+    // Set the global window width and height variables
+    WINDOW_WIDTH = $(window).width();
+    WINDOW_HEIGHT = $(window).height();
+    HALF_WINDOW_WIDTH = WINDOW_WIDTH / 2;
+    HALF_WINDOW_HEIGHT = WINDOW_HEIGHT / 2;
+}
 
 function range_slope(start, end, num) {
     init_range = _.range(0, end-start);
@@ -96,10 +107,9 @@ function init() {
     container = document.createElement( 'div' );
     document.body.appendChild( container );
 
-    halfWidth = window.innerWidth / 2;
-    halfHeight = window.innerHeight / 2;
+    update_window_dimensions();
 
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1100 );
+    camera = new THREE.PerspectiveCamera( 45, WINDOW_WIDTH / WINDOW_HEIGHT, 1, 1100 );
     camera.position.set( 0, 0, 200);
 
     scene = new THREE.Scene();
@@ -431,19 +441,18 @@ function init() {
     add_whale();
 
     function make_bubble() {
-        var material = new THREE.MeshLambertMaterial({color: 0xffffff, opacity: .1, transparent: true});
-        var geom = new THREE.SphereGeometry(_.random(20,30), 32, 16);
-        return new THREE.Mesh(geom, material);
+        var geom = new THREE.SphereGeometry(_.random(5,10), 32, 16);
+        return new THREE.Mesh(geom, BUBBLE_MATERIAL);
     }
 
-    for ( var i = 0; i < 10; i++ ) {
+    for ( var i = 0; i < 20; i++ ) {
         var bubble = make_bubble();
         initBubble(bubble);
         parent.add(bubble);
     }
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
-    renderer.setSize($(document).width(), $(document).height());
+    renderer.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     renderer.sortObjects = false;
     renderer.sortElements = false;
     container.appendChild( renderer.domElement );
@@ -467,7 +476,7 @@ function initBubble(bubble, delay) {
 
     var bubble = this instanceof THREE.Mesh ? this : bubble;
     var delay = delay !== undefined ? delay : _.random(5000, 10000);
-    var duration = _.random(5000, 10000);
+    var duration = _.random(2000, 5000);
 
     bubble.position.x = 0;
     bubble.position.y = 0;
@@ -480,8 +489,8 @@ function initBubble(bubble, delay) {
         return num;
     }
 
-    var x_target = maybe_invert(_.random($(document).width() * .75, $(document).width()));
-    var y_target = maybe_invert(_.random($(document).height() * .75, $(document).height()));
+    var x_target = maybe_invert(_.random(HALF_WINDOW_WIDTH * .5, HALF_WINDOW_WIDTH));
+    var y_target = maybe_invert(_.random(HALF_WINDOW_HEIGHT * .5, HALF_WINDOW_HEIGHT));
     var z_target = -1500;
 
     new TWEEN.Tween( bubble )
@@ -498,11 +507,10 @@ function initBubble(bubble, delay) {
 
 
 function onWindowResize() {
-    var width = $(document).width();
-    var height = $(document).height();
-    camera.aspect = width / height;
+    update_window_dimensions();
+    camera.aspect = WINDOW_WIDTH / WINDOW_HEIGHT;
     camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
+    renderer.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 
@@ -561,8 +569,8 @@ function animateWhalePiece(piece, tox, toy) {
 }
 
 function goToMouseInner( event ) {
-    mouseX = event.clientX - windowHalfX;
-    mouseY = -(event.clientY - windowHalfY);
+    mouseX = event.clientX - HALF_WINDOW_WIDTH;
+    mouseY = -(event.clientY - HALF_WINDOW_HEIGHT);
     animateWhalePiece(last_piece, mouseX, mouseY);
 }
 
@@ -573,8 +581,8 @@ function onDocumentMouseUp( event ) {
     document.removeEventListener( 'mouseup', onDocumentMouseUp, false );
     document.removeEventListener( 'mouseout', onDocumentMouseOut, false );
 
-    mouseX = event.clientX - windowHalfX;
-    mouseY = -(event.clientY - windowHalfY);
+    mouseX = event.clientX - HALF_WINDOW_WIDTH;
+    mouseY = -(event.clientY - HALF_WINDOW_HEIGHT);
     animateWhalePiece(last_piece, mouseX, mouseY);
 }
 
@@ -594,7 +602,7 @@ function onDocumentTouchStart( event ) {
 
 	event.preventDefault();
 
-	mouseXOnMouseDown = event.touches[ 0 ].pageX - windowHalfX;
+	mouseXOnMouseDown = event.touches[ 0 ].pageX - HALF_WINDOW_WIDTH;
 	targetRotationOnMouseDown = targetRotation;
 
     }
@@ -608,7 +616,7 @@ function onDocumentTouchMove( event ) {
 
 	event.preventDefault();
 
-	mouseX = event.touches[ 0 ].pageX - windowHalfX;
+	mouseX = event.touches[ 0 ].pageX - HALF_WINDOW_WIDTH;
 	targetRotation = targetRotationOnMouseDown + ( mouseX - mouseXOnMouseDown ) * 0.05;
 
     }
