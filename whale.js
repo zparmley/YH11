@@ -45,10 +45,12 @@ var tail_min_radius = 40;
 var tail_max_y_offset = -300;
 var tail_num_pieces = 12;
 
-var eye_stack_position = 3;
-var eye_radius = 10;
-var eye_x_offset = 60;
-var eye_y_offset = 60;
+var eye_stack_position = 4;
+var eye_radius = 7;
+var eye_x_offset = 67;
+var eye_y_offset = 65;
+var eye_z_offset = -9;
+var eye_color = 0x3b3b3b;
 
 var dorsal_stack_position = 13;
 var dorsal_y_offset = 155;
@@ -310,12 +312,36 @@ function init() {
         set_next_ro(.6, .7, .2, 0);
         set_next_ro(.6, .7, .2, .05);
         set_next_ro(.6, .6, .2, .13);
-        set_next_ro(.6, .45, .2, .22, 'textures/whale_colors_2_eyes.png');
-        // set_next_ro(.9, .9, .05, .05, 'textures/whale_colors_2_eyes.png');
-        set_next_ro(.6, .4, .2, .27, 'textures/whale_colors_2_eyes.png');
-        // set_next_ro(.9, .9, .05, .05, 'textures/whale_colors_2_eyes.png');
-        set_next_ro(.6, .3, .2, .31, 'textures/whale_colors_2_eyes.png');
-        // set_next_ro(.9, .9, .05, .05, 'textures/whale_colors_2_eyes.png');
+        // set_next_ro(.6, .45, .2, .22, 'textures/whale_colors_2_eyes.png');
+        set_next_ro(.9, .9, .05, .05, 'textures/whale_colors_2_eyes.png');
+        // set_next_ro(.6, .4, .2, .27, 'textures/whale_colors_2_eyes.png');
+        set_next_ro(.9, .9, .05, .05, 'textures/whale_colors_2_eyes_2.png');
+        // set_next_ro(.6, .3, .2, .31, 'textures/whale_colors_2_eyes.png');
+        set_next_ro(.9, .9, .05, .05, 'textures/whale_colors_2_eyes_2.png');
+        set_next_ro(.9, .9, .05, .05, 'textures/whale_colors_2_eyes_2.png');
+        set_next_ro(.9, .9, .05, .05, 'textures/whale_colors_2_eyes_3.png');
+        set_next_ro(.6, .6, .2, .25);
+        set_next_ro(.6, .6, .2, .3);
+        set_next_ro(.6, .6, .2, .32);
+        set_next_ro(.6, .6, .2, .34);
+        set_next_ro(.6, .6, .2, .34);
+        set_next_ro(.6, .6, .2, .4);
+        set_next_ro(.6, .5, .2, .45);
+        set_next_ro(.6, .5, .2, .4);
+        set_next_ro(.6, .5, .2, .41);
+        set_next_ro(.6, .5, .2, .42);
+        set_next_ro(.6, .5, .2, .43);
+        set_next_ro(.6, .5, .2, .44);
+        set_next_ro(.6, .5, .2, .44);
+        set_next_ro(.6, .5, .2, .44);
+        set_next_ro(.6, .5, .2, .44);
+
+        set_next_ro(.9, .9, .05, .05, 'textures/whale_colors_2_allblack.png');
+        set_next_ro(.9, .9, .05, .05, 'textures/whale_colors_2_allblack.png');
+        set_next_ro(.9, .9, .05, .05, 'textures/whale_colors_2_allblack.png');
+        set_next_ro(.9, .9, .05, .05, 'textures/whale_colors_2_allblack.png');
+        set_next_ro(.9, .9, .05, .05, 'textures/whale_colors_2_allblack.png');
+
 
 
 
@@ -368,8 +394,8 @@ function init() {
         // Main stack complete - add more pylons
         var eye_z = processed_stack[processed_stack.length - (eye_stack_position+1)].z;
         eye_stack = [
-            ['offset', eye_radius, 0x000000, eye_z, -eye_x_offset, eye_y_offset],
-            ['offset', eye_radius, 0x000000, eye_z, eye_x_offset, eye_y_offset]
+            ['mapped', {radius: eye_radius, color: eye_color, z: eye_z + eye_z_offset, xoffset: -eye_x_offset, yoffset: eye_y_offset, usecolor: true}],
+            ['mapped', {radius: eye_radius, color: eye_color, z: eye_z + eye_z_offset, xoffset: eye_x_offset, yoffset: eye_y_offset, usecolor: true}],
         ];
 
         add_siblings(processed_stack[processed_stack.length-(eye_stack_position+1)], eye_stack);
@@ -464,7 +490,6 @@ function init() {
 
     document.addEventListener( 'mousemove', onDocumentMouseMove, false );
     document.addEventListener( 'mousedown', onDocumentMouseDown, false );
-    document.addEventListener( 'touchstart', onDocumentTouchStart, false );
     document.addEventListener( 'touchmove', onDocumentTouchMove, false );
 
     window.addEventListener( 'resize', onWindowResize, false );
@@ -596,16 +621,19 @@ function onDocumentMouseOut( event ) {
 }
 
 
-function onDocumentTouchStart( event ) {
+function onSpacePress( event ) {
+    var unicode=e.keyCode? e.keyCode : e.charCode;
+    alert(unicode);
 
-    if ( event.touches.length == 1 ) {
 
-	event.preventDefault();
+ //    if ( event.touches.length == 1 ) {
 
-	mouseXOnMouseDown = event.touches[ 0 ].pageX - HALF_WINDOW_WIDTH;
-	targetRotationOnMouseDown = targetRotation;
+	// event.preventDefault();
 
-    }
+	// mouseXOnMouseDown = event.touches[ 0 ].pageX - HALF_WINDOW_WIDTH;
+	// targetRotationOnMouseDown = targetRotation;
+
+ //    }
 
 }
 
