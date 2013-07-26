@@ -23,8 +23,9 @@ var last_piece;
 // Whale config
 var default_next_animate_delay = 20;
 var default_x = 0;
+var default_fin_x_offset = -25;
 var default_y = 125;
-var start_z = -1000;
+var start_z = -900;
 var default_z_move = 10;
 
 // Mediaz
@@ -42,9 +43,9 @@ var body_max_radius = 180;
 var front_min_radius = 60;
 var front_num_pieces = 9;
 var body_num_pieces = 5;
-var tail_min_radius = 20;
+var tail_min_radius = 40;
 var tail_max_y_offset = -300;
-var tail_num_pieces = 18;
+var tail_num_pieces = 12;
 
 var eye_stack_position = 3;
 var eye_radius = 10;
@@ -87,26 +88,32 @@ function init() {
     halfHeight = window.innerHeight / 2;
     // camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfHeight, -halfHeight, 1, 5000);
     camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1100 );
-    camera.position.set( 0, 0, -1);
+    camera.position.set( 0, 0, 200);
 
     scene = new THREE.Scene();
 
     if (FOG_ENABLED) {
-        fog = new THREE.Fog(WATER_COLOR, 600, 1000);
+        fog = new THREE.Fog(WATER_COLOR, 800, 1200);
         scene.fog = fog;
     }
 
     parent = new THREE.Object3D();
     scene.add( parent );
 
-    function addShape( circleGeom, color, x, y, z, rx, ry, rz, s ) {
-        var texture = THREE.ImageUtils.loadTexture('textures/whale_colors_2.png');
-        texture.offset.x = 0.05;
-        texture.offset.y = 0.05;
-        texture.repeat.x = 0.9;
-        texture.repeat.y = 0.9;
+    function addShape( circleGeom, color, x, y, z, rx, ry, rz, s, usecolor ) {
 
-    	var material = new THREE.MeshBasicMaterial( { map: texture} );
+        if (usecolor == true) {
+            var material = new THREE.MeshBasicMaterial( { color: color, overdraw: true } );
+        } else {
+            var texture = THREE.ImageUtils.loadTexture('textures/whale_colors_2.png');
+            texture.offset.x = 0.05;
+            texture.offset.y = 0.05;
+            texture.repeat.x = 0.9;
+            texture.repeat.y = 0.9;
+
+        	var material = new THREE.MeshBasicMaterial( { map: texture} );
+        }
+
     	var mesh = new THREE.Mesh( circleGeom, material );
     	mesh.position.set( x, y, z );
     	mesh.rotation.set( rx, ry, rz );
@@ -115,8 +122,8 @@ function init() {
     	parent.add( mesh );
     }
 
-    function makeWhalePiece(shape, color, x, y, z, next_shape, next_animate_delay, xoffset, yoffset) {
-        addShape(shape, color, x, y, z, 0, 0, 0, 1);
+    function makeWhalePiece(shape, color, x, y, z, next_shape, next_animate_delay, xoffset, yoffset, usecolor) {
+        addShape(shape, color, x, y, z, 0, 0, 0, 1, usecolor);
         console.log([shape, color, x, y, z]);
         return {
             x: x,
@@ -178,6 +185,24 @@ function init() {
                 // parent.add( mesh );
     }
 
+    function makeFinShape(alength, aheight) {
+                var x = 0, y = 0;
+
+                var finShape = new THREE.Shape(); // From http://blog.burlock.org/html5/130-paths
+
+                finShape.moveTo( x + 0, y + 0 );
+
+                var arcShape = new THREE.Shape();
+ 
+                console.log(alength)
+                console.log(aheight)
+                arcShape.moveTo( 25 + alength, 20 );
+                arcShape.absellipse( 25, 20, alength, aheight, 0, Math.PI*2, true );
+                debugobj = arcShape;
+                return arcShape;
+
+    }
+
     var current_color = 0xffffff;
     function altColor() {
         if (current_color == 0x000000) {
@@ -205,16 +230,22 @@ function init() {
         } else if (piece_def[0] == 'mapped') {
             piece_map = piece_def[1];
             //     function makeWhalePiece(shape, color, x, y, z, next_shape, next_animate_delay, xoffset, yoffset)
+            xoffset = piece_map['xoffset'] | 0;
+            yoffset = piece_map['yoffset'] | 0;
+            basex = piece_map['x'] | default_x;
+            basey = piece_map['y'] | default_y;
+
             piece = makeWhalePiece(
                 piece_map['shape'] == undefined ? makeCircle(piece_map['radius']) : piece_map['shape'],
-                piece_map['color'] | altColor(),
-                piece_map['x'] | default_x,
-                piece_map['y'] | default_y,
+                piece_map['color'] == undefined ? altColor() : piece_map['color'],
+                basex + xoffset,
+                basey + yoffset,
                 piece_map['z'],
                 next,
                 piece_map['next_animate_delay'] == undefined ? default_next_animate_delay : piece_map['next_animate_delay'],
-                piece_map['xoffset'] | 0,
-                piece_map['yoffset'] | 0
+                xoffset,
+                yoffset,
+                piece_map['usecolor']
             );
         }
 
@@ -239,12 +270,21 @@ function init() {
         }
     }
 
+    
     function add_whale() {
         var whale_pieces_stack = [];
 
         // tail
         tail_piece = makeFin(200, 20);
-        whale_pieces_stack.push(['mapped', {shape: tail_piece, color: altColor(), z: get_z(), yoffset: tail_max_y_offset}]);
+        whale_pieces_stack.push(['mapped', {shape: tail_piece, color: 0xffffff, z: get_z(), yoffset: tail_max_y_offset-8, xoffset: default_fin_x_offset, usecolor: true, next_animate_delay: 0}]);
+        tail_piece = makeFin(200, 20);
+        whale_pieces_stack.push(['mapped', {shape: tail_piece, color: 0x000000, z: get_z(0.1), yoffset: tail_max_y_offset, xoffset: default_fin_x_offset, usecolor: true}]);
+
+        tail_piece = makeFin(170, 17);
+        whale_pieces_stack.push(['mapped', {shape: tail_piece, color: 0xffffff, z: get_z(4), yoffset: tail_max_y_offset - 10, xoffset: default_fin_x_offset, usecolor: true, next_animate_delay: 0}]);
+        tail_piece = makeFin(170, 17);
+        whale_pieces_stack.push(['mapped', {shape: tail_piece, color: 0x000000, z: get_z(0.1), yoffset: tail_max_y_offset - 2, xoffset: default_fin_x_offset, usecolor: true}]);
+                // debugobj = makeFinShape(400, 20);
 
 
         // Backside/tail slope
@@ -271,6 +311,10 @@ function init() {
 
         var processed_stack = process_pieces_stack(whale_pieces_stack);
 
+
+        // Preserve a copy of the main body stack, for adding features based on offsets.
+        var body_circles = processed_stack.slice(0);
+
         // Main stack complete - add more pylons
         var eye_z = processed_stack[processed_stack.length - (eye_stack_position+1)].z;
         eye_stack = [
@@ -280,14 +324,34 @@ function init() {
 
         add_siblings(processed_stack[processed_stack.length-(eye_stack_position+1)], eye_stack);
 
-        dorsal_geometry = makeFin(200, 20);
+        
+
+        // Add dorsal fin pieces
+        dorsal_geometry = makeFin(21, 250);
+        dorsal_geometry_smaller = makeFin(20, 235);
+        dorsal_geometry_hump = makeFin(18, 70);
+
+        dorsal_2_back = processed_stack[processed_stack.length - (dorsal_stack_position+5)];
+        dorsal_1_back = processed_stack[processed_stack.length - (dorsal_stack_position+4)];
         dorsal_rider = processed_stack[processed_stack.length - (dorsal_stack_position+3)];
-        dorsal_z = dorsal_rider.z;
+        dorsal_1_forward = processed_stack[processed_stack.length - (dorsal_stack_position+2)];
+        dorsal_2_forward = processed_stack[processed_stack.length - (dorsal_stack_position+1)];
+
         add_siblings(dorsal_rider, [
-            ['mapped', {shape: dorsal_geometry, color: altColor(), z: dorsal_z, yoffset: 50}]
+            ['mapped', {shape: dorsal_geometry, color: 0x000000, z: dorsal_rider.z, yoffset: 200, xoffset: default_fin_x_offset, usecolor: true}]
         ]);
+        add_siblings(dorsal_1_forward, [
+            ['mapped', {shape: dorsal_geometry_smaller, color: 0x000000, z: dorsal_1_forward.z, yoffset: 170, xoffset: default_fin_x_offset, usecolor: true}]
+        ]);
+        add_siblings(dorsal_2_forward, [
+            ['mapped', {shape: dorsal_geometry_hump, color: 0x000000, z: dorsal_2_forward.z, yoffset: 170, xoffset: default_fin_x_offset, usecolor: true}]
+        ]);
+
+
+
+
         // HACKY
-        scene.children[0].children[dorsal_rider.siblings[0].position_in_scene].rotateZ(1.55);
+        // scene.children[0].children[dorsal_rider.siblings[0].position_in_scene].rotateZ(1.55);
         console.log(dorsal_rider);
 
    }
