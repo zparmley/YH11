@@ -13,12 +13,10 @@ var mouseXOnMouseDown = 0;
 var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
 
-
 // Some global stuff - ouch - refactor
-var first_piece
-var next_piece
-var last_piece
-
+var first_piece;
+var next_piece;
+var last_piece;
 
 
 init();
@@ -29,7 +27,6 @@ function init() {
     container = document.createElement( 'div' );
     document.body.appendChild( container );
 
-//    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000 );
     halfWidth = window.innerWidth / 2;
     halfHeight = window.innerHeight / 2;
     camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfHeight, -halfHeight, 1, 5000);
@@ -38,33 +35,16 @@ function init() {
     scene = new THREE.Scene();
 
     parent = new THREE.Object3D();
-    parent.position.y = 50;
     scene.add( parent );
 
-    function addShape( shape, color, x, y, z, rx, ry, rz, s ) {
-
-    	// flat shape
-
-    	var geometry = new THREE.ShapeGeometry( shape );
-    	var material = new THREE.MeshBasicMaterial( { color: color, overdraw: true } );
-
-    	var mesh = new THREE.Mesh( geometry, material );
+    function addShape( circleGeom, color, x, y, z, rx, ry, rz, s ) {
+        var texture = THREE.ImageUtils.loadTexture('textures/crate.gif');
+    	var material = new THREE.MeshBasicMaterial( { map: texture} );
+    	var mesh = new THREE.Mesh( circleGeom, material );
     	mesh.position.set( x, y, z );
     	mesh.rotation.set( rx, ry, rz );
     	mesh.scale.set( s, s, s );
     	parent.add( mesh );
-
-    	// line
-
-    	// var geometry = shape.createPointsGeometry();
-    	// var material = new THREE.LineBasicMaterial( { linewidth: 2, color: 0x333333, transparent: true } );
-
-    	// var line = new THREE.Line( geometry, material );
-    	// line.position.set( x, y, z );
-    	// line.rotation.set( rx, ry, rz );
-    	// line.scale.set( s, s, s );
-    	// parent.add( line );
-
     }
 
     function makeWhalePiece(shape, color, x, y, z, next_shape, next_animate_delay, xoffset, yoffset) {
@@ -80,17 +60,9 @@ function init() {
     }
 
     function makeCircle( radius ) {
-    	var circleShape = new THREE.Shape();
-    	circleShape.moveTo( 0, radius );
-    	circleShape.quadraticCurveTo( radius, radius, radius, 0 );
-    	circleShape.quadraticCurveTo( radius, -radius, 0, -radius );
-    	circleShape.quadraticCurveTo( -radius, -radius, -radius, 0 );
-    	circleShape.quadraticCurveTo( -radius, radius, 0, radius );
-    	return circleShape
+        return new THREE.CircleGeometry(radius, 64);
     }
 
-    // addShape( shape, color, x, y, z, rx, ry,rz, s );
-    // function makeWhalePiece(shape, color, x, y, z, next_shape, next_animate_delay, xoffset, yoffset) {
     var start_z = -4000;
     rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
     first_piece = makeWhalePiece(makeCircle(30), rcolor, 0, 125, start_z, null, null, 0, 0);
@@ -98,9 +70,9 @@ function init() {
     next_piece = makeWhalePiece(makeCircle(40), rcolor, 0, 125, start_z+10, first_piece, 50, 0, 0);
     rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
     piece = makeWhalePiece(makeCircle(60), rcolor, 0, 125, start_z+20, next_piece, 50, 0, 0);
-    for (var i = 1; i < 500; i++) {
+    for (var i = 1; i < 5; i++) {
         rcolor = parseInt('0x' + Math.floor(Math.random()*16777215).toString(16));
-        piece = makeWhalePiece(makeCircle(80), rcolor, 0, 125, start_z+30 + (i), piece, 50, 0, 0);
+        piece = makeWhalePiece(makeCircle(100), rcolor, 0, 125, start_z+30 + (i), piece, 50, 0, 0);
     }
     last_piece = piece;
 
@@ -168,13 +140,11 @@ function onDocumentMouseMove( event ) {
 }
 
 
-
-
 function animateThing( fromx, fromy, tox, toy, thingIndex, duration, easing, delay ) {
     setTimeout(function() {
     $({targetX: fromx, targetY: fromy}).animate({targetX: tox, targetY: toy}, {
         duration: duration,
-        easing: 'easeOutCubic',
+        easing: 'easeOutCubpic',
         step: function() {
             scene.children[0].children[thingIndex].position.x = this.targetX;
             scene.children[0].children[thingIndex].position.y = this.targetY;
@@ -280,7 +250,7 @@ function animate() {
 
 function render() {
 
-    parent.rotation.y += ( targetRotation - parent.rotation.y ) * 0.05;
+    scene.children[0].children[6].rotation.y += 0.01;
     renderer.render( scene, camera );
 
 }
