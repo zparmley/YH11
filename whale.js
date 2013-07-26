@@ -64,7 +64,7 @@ function init() {
     scene.add( parent );
 
     function addShape( circleGeom, color, x, y, z, rx, ry, rz, s ) {
-        var texture = THREE.ImageUtils.loadTexture('textures/crate.gif');
+        var texture = THREE.ImageUtils.loadTexture('textures/whale_colors_1.png');
     	var material = new THREE.MeshBasicMaterial( { map: texture} );
     	var mesh = new THREE.Mesh( circleGeom, material );
     	mesh.position.set( x, y, z );
