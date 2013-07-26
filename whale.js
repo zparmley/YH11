@@ -1,4 +1,4 @@
-var FOG_ENABLED = false;
+var FOG_ENABLED = true;
 
 var container, stats;
 
