@@ -390,14 +390,14 @@ function init() {
     add_whale();
 
     function make_bubble() {
-        var material = new THREE.MeshLambertMaterial({color: 0xff0000, transparent: true});
-        var geom = new THREE.SphereGeometry(70, 32, 16);
+        var material = new THREE.MeshLambertMaterial({color: 0xffffff, opacity: .1, transparent: true});
+        var geom = new THREE.SphereGeometry(_.random(20,30), 32, 16);
         return new THREE.Mesh(geom, material);
     }
 
     for ( var i = 0; i < 10; i++ ) {
         var bubble = make_bubble();
-        initBubble(bubble, i * 10 );
+        initBubble(bubble);
         parent.add(bubble);
     }
 
@@ -425,21 +425,33 @@ function init() {
 function initBubble(bubble, delay) {
 
     var bubble = this instanceof THREE.Mesh ? this : bubble;
-    var delay = delay !== undefined ? delay : 0;
+    var delay = delay !== undefined ? delay : _.random(5000, 10000);
+    var duration = _.random(5000, 10000);
 
-    bubble.position.x = 10;
-    bubble.position.y = 10;
-    bubble.position.z = 10;
+    bubble.position.x = 0;
+    bubble.position.y = 0;
+    bubble.position.z = 210;
+
+    function maybe_invert(num) {
+        if (_.random(1) === 0) {
+            return -num;
+        }
+        return num;
+    }
+
+    var x_target = maybe_invert(_.random($(document).width() * .75, $(document).width()));
+    var y_target = maybe_invert(_.random($(document).height() * .75, $(document).height()));
+    var z_target = -1500;
 
     new TWEEN.Tween( bubble )
         .delay( delay )
-        .to( {}, 10000 )
+        .to( {}, duration )
         .onComplete( initBubble )
         .start();
 
     new TWEEN.Tween( bubble.position )
         .delay( delay )
-        .to( { x: 100, y: 200, z: -1000}, 1000 )
+        .to( { x: x_target, y: y_target, z: z_target}, duration )
         .start();
 }
 
