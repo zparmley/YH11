@@ -27,27 +27,34 @@ var default_y = 125;
 var start_z = -1000;
 var default_z_move = 10;
 
-// Sizes, length
-var body_max_radius = 180;
-var front_min_radius = 40;
-var front_num_pieces = 14;
-var body_num_pieces = 7;
-var tail_min_radius = 20;
-var tail_max_y_offset = -300;
-var tail_num_pieces = 18;
+// Mediaz
 
 var WATER_COLOR = 0xaaccff;
-
-var eye_stack_position = 3;
-var eye_radius = 10;
-var eye_x_offset = 50;
-var eye_y_offset = 50;
 var WHALE_MATERIAL = new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture('textures/whale_colors_1.png')});
 var WHALE_SONGS = [new Audio("resources/orca1.wav"),
                    new Audio("resources/orca2.wav"),
                    new Audio("resources/orca3.wav"),
                    new Audio("resources/orca4.wav"),
                    new Audio("resources/orca5.wav")];
+
+// Sizes, length
+var body_max_radius = 180;
+var front_min_radius = 60;
+var front_num_pieces = 9;
+var body_num_pieces = 5;
+var tail_min_radius = 20;
+var tail_max_y_offset = -300;
+var tail_num_pieces = 18;
+
+var eye_stack_position = 3;
+var eye_radius = 10;
+var eye_x_offset = 60;
+var eye_y_offset = 60;
+
+var dorsal_stack_position = 13;
+
+// Ditch this
+var debugobj;
 
 init();
 animate();
@@ -78,7 +85,7 @@ function init() {
 
     halfWidth = window.innerWidth / 2;
     halfHeight = window.innerHeight / 2;
-    //camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfHeight, -halfHeight, 1, 5000);
+    // camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfHeight, -halfHeight, 1, 5000);
     camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1100 );
     camera.position.set( 0, 0, -1);
 
@@ -104,12 +111,13 @@ function init() {
     	mesh.position.set( x, y, z );
     	mesh.rotation.set( rx, ry, rz );
     	mesh.scale.set( s, s, s );
-        console.log(mesh);
+        // console.log(mesh);
     	parent.add( mesh );
     }
 
     function makeWhalePiece(shape, color, x, y, z, next_shape, next_animate_delay, xoffset, yoffset) {
         addShape(shape, color, x, y, z, 0, 0, 0, 1);
+        console.log([shape, color, x, y, z]);
         return {
             x: x,
             y: y,
@@ -135,6 +143,41 @@ function init() {
         return new THREE.CircleGeometry(radius, 32);
     }
 
+    function makeFin(alength, aheight) {
+                var x = 0, y = 0;
+
+                var finShape = new THREE.Shape(); // From http://blog.burlock.org/html5/130-paths
+
+                finShape.moveTo( x + 0, y + 0 );
+                // finShape.arc( 40, 40, 40, 0, Math.PI*2, false );
+                var arcShape = new THREE.Shape();
+                // arcShape.moveTo( 0, 0 );
+                // arcShape.absellipse( 10, 10, 50, 10, 6, false );
+
+
+                // arcShape.moveTo( 65, 20 );
+                // arcShape.absellipse( 25, 20, 40, 10, 0, Math.PI*2, true );
+                console.log(alength)
+                console.log(aheight)
+                arcShape.moveTo( 25 + alength, 20 );
+                arcShape.absellipse( 25, 20, alength, aheight, 0, Math.PI*2, true );
+                // heartShape.bezierCurveTo( x + 25, y + 25, x + 20, y, x, y );
+                // heartShape.bezierCurveTo( x - 30, y, x - 30, y + 35,x - 30,y + 35 );
+                // heartShape.bezierCurveTo( x - 30, y + 55, x - 10, y + 77, x + 25, y + 95 );
+                // heartShape.bezierCurveTo( x + 60, y + 77, x + 80, y + 55, x + 80, y + 35 );
+                // heartShape.bezierCurveTo( x + 80, y + 35, x + 80, y, x + 50, y );
+                // heartShape.bezierCurveTo( x + 35, y, x + 25, y + 25, x + 25, y + 25 );
+                var geometry = new THREE.ShapeGeometry( arcShape );
+                debugobj = [arcShape, geometry];
+                return geometry;
+                // addShape(geometry, 0x000000, 400, 100, get_z(), 0, 0, 0, 1);
+                // var mesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [ new THREE.MeshBasictMaterial( { map: color } ), new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true, transparent: true } ) ] );
+                // mesh.position.set( x, y, z - 125 );
+                // mesh.rotation.set( rx, ry, rz );
+                // mesh.scale.set( s, s, s );
+                // parent.add( mesh );
+    }
+
     var current_color = 0xffffff;
     function altColor() {
         if (current_color == 0x000000) {
@@ -142,16 +185,15 @@ function init() {
         } else {
             current_color = 0x000000;
         }
-        console.log(current_color);
+        // console.log(current_color);
         return current_color;
     }
 
     var current_z = start_z;
     function get_z(z_move) {
-        ret = current_z;
-        z_move = z_move | default_z_move;
-        current_z = current_z + default_z_move;
-        return ret;
+        z_move = z_move == undefined ? default_z_move : z_move;
+        current_z = current_z + z_move;
+        return current_z;
     }
 
         //     function makeOffsetWhaleCircle(radius, color, z, x_offset, y_offset, next_shape)
@@ -160,6 +202,20 @@ function init() {
             piece = makeBasicWhaleCircle(piece_def[1], piece_def[2], piece_def[3], next);
         } else if (piece_def[0] == 'offset') {
             piece = makeOffsetWhaleCircle(piece_def[1], piece_def[2], piece_def[3], piece_def[4], piece_def[5], next);
+        } else if (piece_def[0] == 'mapped') {
+            piece_map = piece_def[1];
+            //     function makeWhalePiece(shape, color, x, y, z, next_shape, next_animate_delay, xoffset, yoffset)
+            piece = makeWhalePiece(
+                piece_map['shape'] == undefined ? makeCircle(piece_map['radius']) : piece_map['shape'],
+                piece_map['color'] | altColor(),
+                piece_map['x'] | default_x,
+                piece_map['y'] | default_y,
+                piece_map['z'],
+                next,
+                piece_map['next_animate_delay'] == undefined ? default_next_animate_delay : piece_map['next_animate_delay'],
+                piece_map['xoffset'] | 0,
+                piece_map['yoffset'] | 0
+            );
         }
 
         return piece;
@@ -186,6 +242,11 @@ function init() {
     function add_whale() {
         var whale_pieces_stack = [];
 
+        // tail
+        tail_piece = makeFin(200, 20);
+        whale_pieces_stack.push(['mapped', {shape: tail_piece, color: altColor(), z: get_z(), yoffset: tail_max_y_offset}]);
+
+
         // Backside/tail slope
         var backside_radius = range_slope(tail_min_radius, body_max_radius, tail_num_pieces);
         var backside_y_push = range_slope(tail_max_y_offset, 0, tail_num_pieces);
@@ -203,16 +264,32 @@ function init() {
             whale_pieces_stack.push(['basic', radius, altColor(), get_z()]);
         });
 
+        whale_pieces_stack[whale_pieces_stack.length - 1].next_animate_delay = 3;
+        whale_pieces_stack.push(['mapped', {radius: 50, color: altColor(), z: get_z(3), next_animate_delay: 3}]);
+        whale_pieces_stack.push(['mapped', {radius: 40, color: altColor(), z: get_z(1), next_animate_delay: 0}]);
+        // console.log(whale_pieces_stack);
+
         var processed_stack = process_pieces_stack(whale_pieces_stack);
 
         // Main stack complete - add more pylons
-        var eye_z = processed_stack[processed_stack.length - eye_stack_position].z;
+        var eye_z = processed_stack[processed_stack.length - (eye_stack_position+1)].z;
         eye_stack = [
             ['offset', eye_radius, 0x000000, eye_z, -eye_x_offset, eye_y_offset],
             ['offset', eye_radius, 0x000000, eye_z, eye_x_offset, eye_y_offset]
         ];
 
-        add_siblings(processed_stack[processed_stack.length-3], eye_stack);
+        add_siblings(processed_stack[processed_stack.length-(eye_stack_position+1)], eye_stack);
+
+        dorsal_geometry = makeFin(200, 20);
+        dorsal_rider = processed_stack[processed_stack.length - (dorsal_stack_position+3)];
+        dorsal_z = dorsal_rider.z;
+        add_siblings(dorsal_rider, [
+            ['mapped', {shape: dorsal_geometry, color: altColor(), z: dorsal_z, yoffset: 50}]
+        ]);
+        // HACKY
+        scene.children[0].children[dorsal_rider.siblings[0].position_in_scene].rotateZ(1.55);
+        console.log(dorsal_rider);
+
    }
 
     add_whale();
@@ -304,7 +381,7 @@ function animateWhalePiece(piece, tox, toy) {
 var gtmcallcount = 0;
 function goToMouseInner( event ) {
     gtmcallcount++;
-    console.log(gtmcallcount);
+    // console.log(gtmcallcount);
 
     mouseX = event.clientX - windowHalfX;
     mouseY = -(event.clientY - windowHalfY);
