@@ -54,6 +54,13 @@ var eye_y_offset = 60;
 
 var dorsal_stack_position = 13;
 
+var fins_start_stack_position = 7;
+var fin_default_height = 15;
+var fin_lengths = [50, 100, 150, 200, 100, 100];
+var fin_x_offsets = [1000,1000,1000,1000,180,140];
+var fin_y_offsets = [0,0,0,0,0,0];
+var fin_default_z_offset = 5;
+
 // Ditch this
 var debugobj;
 
@@ -89,7 +96,7 @@ function init() {
     // camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfHeight, -halfHeight, 1, 5000);
     camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1100 );
     camera.position.set( 0, 0, 200);
-
+    
     scene = new THREE.Scene();
 
     if (FOG_ENABLED) {
@@ -100,10 +107,16 @@ function init() {
     parent = new THREE.Object3D();
     scene.add( parent );
 
+    // Lighting
+    var directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+    directionalLight.position.set( 0, 150, 200 );
+    scene.add( directionalLight );
+
+
     function addShape( circleGeom, color, x, y, z, rx, ry, rz, s, usecolor ) {
 
         if (usecolor == true) {
-            var material = new THREE.MeshBasicMaterial( { color: color, overdraw: true } );
+            var material = new THREE.MeshLambertMaterial( { color: color, overdraw: true } );
         } else {
             var texture = THREE.ImageUtils.loadTexture('textures/whale_colors_2.png');
             texture.offset.x = 0.05;
@@ -111,7 +124,7 @@ function init() {
             texture.repeat.x = 0.9;
             texture.repeat.y = 0.9;
 
-        	var material = new THREE.MeshBasicMaterial( { map: texture} );
+        	var material = new THREE.MeshLambertMaterial( { map: texture} );
         }
 
     	var mesh = new THREE.Mesh( circleGeom, material );
@@ -284,7 +297,6 @@ function init() {
         whale_pieces_stack.push(['mapped', {shape: tail_piece, color: 0xffffff, z: get_z(4), yoffset: tail_max_y_offset - 10, xoffset: default_fin_x_offset, usecolor: true, next_animate_delay: 0}]);
         tail_piece = makeFin(170, 17);
         whale_pieces_stack.push(['mapped', {shape: tail_piece, color: 0x000000, z: get_z(0.1), yoffset: tail_max_y_offset - 2, xoffset: default_fin_x_offset, usecolor: true}]);
-                // debugobj = makeFinShape(400, 20);
 
 
         // Backside/tail slope
@@ -347,12 +359,31 @@ function init() {
             ['mapped', {shape: dorsal_geometry_hump, color: 0x000000, z: dorsal_2_forward.z, yoffset: 170, xoffset: default_fin_x_offset, usecolor: true}]
         ]);
 
+        // Ok, left and right fins
+        var fins = fin_lengths.map(function(length) {
+            return makeFin(length, fin_default_height);
+        });
+        var fin_riders = [];
+        for (var i = fin_lengths.length - 1; i >= 0; i--) {
+            fin_riders.push(body_circles[body_circles.length - (fins_start_stack_position + i)]);
+        }
+        _.zip(fins, fin_riders, fin_x_offsets, fin_y_offsets).map(function(fin_config) {
+            add_siblings(fin_config[1], [
+                ['mapped', {shape: fin_config[0], color: 0x000000, z: fin_config[1].z - fin_default_z_offset, xoffset: fin_config[2] + default_fin_x_offset, yoffset: fin_config[3], usecolor: true}],
+                ['mapped', {shape: fin_config[0], color: 0x000000, z: fin_config[1].z - fin_default_z_offset, xoffset: -fin_config[2] + default_fin_x_offset, yoffset: fin_config[3], usecolor: true}]
+
+            ]);
+        });
+        // console.log(fins);
+        // console.log(fin_riders);
+
+
+
 
 
 
         // HACKY
         // scene.children[0].children[dorsal_rider.siblings[0].position_in_scene].rotateZ(1.55);
-        console.log(dorsal_rider);
 
    }
 
