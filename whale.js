@@ -1,6 +1,6 @@
 var FOG_ENABLED = true;
 
-var container, stats;
+var container, stats, keyboard;
 
 var camera, scene, renderer;
 
@@ -22,7 +22,7 @@ var default_next_animate_delay = 10;
 var default_x = 0;
 var default_fin_x_offset = -25;
 var default_y = 125;
-var start_z = -900;
+var start_z = -120;
 var default_z_move = 10;
 
 // Mediaz
@@ -111,8 +111,8 @@ function init() {
 
     update_window_dimensions();
 
-    camera = new THREE.PerspectiveCamera( 45, WINDOW_WIDTH / WINDOW_HEIGHT, 1, 1100 );
-    camera.position.set( 0, 0, 200);
+    camera = new THREE.PerspectiveCamera( 45, WINDOW_WIDTH / WINDOW_HEIGHT, 1, 1400 );
+    camera.position.set( 0, 0, 1000);
 
     scene = new THREE.Scene();
 
@@ -128,6 +128,18 @@ function init() {
     var directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
     directionalLight.position.set( 0, 150, 200 );
     scene.add( directionalLight );
+
+    // Keyboard controls
+    keyboard = new THREEx.KeyboardState();
+
+    var targetRotation = 0;
+
+    function onKeypress(event) {
+        if (keyboard.pressed("space")) {
+            targetRotation += 1;
+            parent.rotation.y += ( targetRotation - parent.rotation.y ) * 0.05;
+        }
+    }
 
 
     function addShape( circleGeom, color, x, y, z, rx, ry, rz, s, usecolor ) {
@@ -148,13 +160,11 @@ function init() {
     	mesh.position.set( x, y, z );
     	mesh.rotation.set( rx, ry, rz );
     	mesh.scale.set( s, s, s );
-        // console.log(mesh);
     	parent.add( mesh );
     }
 
     function makeWhalePiece(shape, color, x, y, z, next_shape, next_animate_delay, xoffset, yoffset, usecolor) {
         addShape(shape, color, x, y, z, 0, 0, 0, 1, usecolor);
-        console.log([shape, color, x, y, z]);
         return {
             x: x,
             y: y,
@@ -186,32 +196,11 @@ function init() {
                 var finShape = new THREE.Shape(); // From http://blog.burlock.org/html5/130-paths
 
                 finShape.moveTo( x + 0, y + 0 );
-                // finShape.arc( 40, 40, 40, 0, Math.PI*2, false );
                 var arcShape = new THREE.Shape();
-                // arcShape.moveTo( 0, 0 );
-                // arcShape.absellipse( 10, 10, 50, 10, 6, false );
-
-
-                // arcShape.moveTo( 65, 20 );
-                // arcShape.absellipse( 25, 20, 40, 10, 0, Math.PI*2, true );
-                console.log(alength)
-                console.log(aheight)
                 arcShape.moveTo( 25 + alength, 20 );
                 arcShape.absellipse( 25, 20, alength, aheight, 0, Math.PI*2, true );
-                // heartShape.bezierCurveTo( x + 25, y + 25, x + 20, y, x, y );
-                // heartShape.bezierCurveTo( x - 30, y, x - 30, y + 35,x - 30,y + 35 );
-                // heartShape.bezierCurveTo( x - 30, y + 55, x - 10, y + 77, x + 25, y + 95 );
-                // heartShape.bezierCurveTo( x + 60, y + 77, x + 80, y + 55, x + 80, y + 35 );
-                // heartShape.bezierCurveTo( x + 80, y + 35, x + 80, y, x + 50, y );
-                // heartShape.bezierCurveTo( x + 35, y, x + 25, y + 25, x + 25, y + 25 );
                 var geometry = new THREE.ShapeGeometry( arcShape );
                 return geometry;
-                // addShape(geometry, 0x000000, 400, 100, get_z(), 0, 0, 0, 1);
-                // var mesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [ new THREE.MeshBasictMaterial( { map: color } ), new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true, transparent: true } ) ] );
-                // mesh.position.set( x, y, z - 125 );
-                // mesh.rotation.set( rx, ry, rz );
-                // mesh.scale.set( s, s, s );
-                // parent.add( mesh );
     }
 
     var current_color = 0xffffff;
@@ -383,7 +372,6 @@ function init() {
         whale_pieces_stack[whale_pieces_stack.length - 1].next_animate_delay = 3;
         whale_pieces_stack.push(['mapped', {radius: 50, color: altColor(), z: get_z(3), next_animate_delay: 3}]);
         whale_pieces_stack.push(['mapped', {radius: 40, color: altColor(), z: get_z(1), next_animate_delay: 0}]);
-        // console.log(whale_pieces_stack);
 
         var processed_stack = process_pieces_stack(whale_pieces_stack);
 
@@ -487,6 +475,7 @@ function init() {
     document.addEventListener( 'mousemove', onDocumentMouseMove, false );
     document.addEventListener( 'mousedown', onDocumentMouseDown, false );
     document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+    document.addEventListener('keypress', onKeypress, false);
 
     window.addEventListener( 'resize', onWindowResize, false );
 
